@@ -31,44 +31,44 @@ class _FirstPageState extends State<FirstPage> {
               data.length,
               (index) => Padding(
                 padding: const EdgeInsets.all(5.0),
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      isFavoriteList[index] = !isFavoriteList[index];
-                    });
-                  },
-                  child: Card(
-                    child: Column(
-                      children: [
-                        Image.network(data[index]),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text('Product ${index + 1}'),
-                        ),
-                        Text('\$${100 * (index + 1)}'),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                isFavoriteList[index] = !isFavoriteList[index];
-                                QuickAlert.show(
-                                  context: context,
-                                  type: QuickAlertType.success,
-                                  text: 'Your Favorite List Updated !',
-                                );
-                              });
-                            },
-                            child: Icon(
-                              Icons.favorite,
-                              color: isFavoriteList[index]
-                                  ? Colors.red
-                                  : Colors.grey,
-                            ),
+                child: Card(
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isFavoriteList[index] = !isFavoriteList[index];
+                          });
+                        },
+                        child: Image.network(data[index]),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Text('Product ${index + 1}'),
+                      ),
+                      Text('\$${100 * (index + 1)}'),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isFavoriteList[index] = !isFavoriteList[index];
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: 'Your Favorite List Updated !',
+                              );
+                            });
+                          },
+                          child: Icon(
+                            Icons.favorite,
+                            color: isFavoriteList[index]
+                                ? Colors.red
+                                : Colors.grey,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
