@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'LikesPage.dart';
 import 'FirstPage.dart';
+import 'ProfilePage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -18,7 +19,7 @@ class _HomePageState extends State<HomePage> {
     const LikesPage(),
     const Placeholder(),
     const Placeholder(),
-    const Placeholder(),
+    const ProfilePage(),
   ];
 
   @override

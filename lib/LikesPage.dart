@@ -52,6 +52,3 @@ class _LikesPageState extends State<LikesPage> {
     );
   }
 }
-
-
-
