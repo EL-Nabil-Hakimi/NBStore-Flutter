@@ -18,7 +18,6 @@ class _HomePageState extends State<HomePage> {
     const FirstPage(),
     const LikesPage(),
     const Placeholder(),
-    const Placeholder(),
     const ProfilePage(),
   ];
 
@@ -34,7 +33,7 @@ class _HomePageState extends State<HomePage> {
             child: GNav(
               backgroundColor: Colors.black,
               color: Colors.white,
-              activeColor: Colors.black, // Removed Color.fromARGB(255, 0, 0, 0)
+              activeColor: Colors.black, 
               tabBackgroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
               gap: 8,
@@ -56,10 +55,6 @@ class _HomePageState extends State<HomePage> {
                 GButton(
                   icon: Icons.search,
                   text: 'Search',
-                ),
-                GButton(
-                  icon: Icons.shopping_cart,
-                  text: 'My Card',
                 ),
                 GButton(
                   icon: Icons.person,

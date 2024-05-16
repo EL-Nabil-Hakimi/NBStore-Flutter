@@ -22,7 +22,7 @@ class _LikesPageState extends State<LikesPage> {
         ],
       ),
       body: ListView.builder(
-        itemCount: 5,
+        itemCount: 2,
         itemBuilder: (context, index) {
           return Card(
             child: ListTile(
