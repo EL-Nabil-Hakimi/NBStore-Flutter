@@ -8,10 +8,19 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       appBar: AppBar(
+        backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
-        title: const Text('Nb Store'),
+        title: const Text(
+          'Nb Store',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: const [
-          IconButton(onPressed: null, icon: Icon(Icons.shopping_cart))
+          IconButton(
+              onPressed: null,
+              icon: Icon(
+                Icons.shopping_cart,
+                color: Colors.white,
+              ))
         ],
       ),
       body: Padding(
@@ -37,10 +46,10 @@ class ProfilePage extends StatelessWidget {
                   TextStyle(color: Colors.grey, letterSpacing: 2, fontSize: 16),
             ),
             const SizedBox(height: 10),
-            Text(
+            const Text(
               'El Bigg',
               style: TextStyle(
-                color: Colors.amberAccent[200],
+                color: Colors.white,
                 letterSpacing: 2,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -53,10 +62,10 @@ class ProfilePage extends StatelessWidget {
                   TextStyle(color: Colors.grey, letterSpacing: 2, fontSize: 16),
             ),
             const SizedBox(height: 10),
-            Text(
+            const Text(
               '8',
               style: TextStyle(
-                color: Colors.amberAccent[200],
+                color: Colors.white,
                 letterSpacing: 2,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

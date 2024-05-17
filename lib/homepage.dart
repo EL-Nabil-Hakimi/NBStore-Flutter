@@ -3,6 +3,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'LikesPage.dart';
 import 'FirstPage.dart';
 import 'ProfilePage.dart';
+import 'searchPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const FirstPage(),
     const LikesPage(),
-    const Placeholder(),
+    const SearchPage(),
     const ProfilePage(),
   ];
 

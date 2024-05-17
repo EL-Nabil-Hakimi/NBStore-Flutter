@@ -1,5 +1,25 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:quickalert/quickalert.dart';
+import 'package:path_provider/path_provider.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const LikesPage(),
+    );
+  }
+}
 
 class LikesPage extends StatefulWidget {
   const LikesPage({Key? key}) : super(key: key);
@@ -9,46 +29,132 @@ class LikesPage extends StatefulWidget {
 }
 
 class _LikesPageState extends State<LikesPage> {
-  List<bool> isLikedList = List.generate(50, (index) => false);
+  List<Product> products = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadJsonData();
+  }
+
+  Future<void> loadJsonData() async {
+    try {
+      final Directory directory = await getApplicationDocumentsDirectory();
+      final File localFile = File('${directory.path}/data.json');
+      final String jsonString = await localFile.readAsString();
+      final List<dynamic> data = json.decode(jsonString);
+      setState(() {
+        products = data.map((product) => Product.fromJson(product)).toList();
+      });
+      print('JSON data loaded successfully.');
+    } catch (e) {
+      print('Error loading JSON data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final likedProducts = products.where((product) => product.like).toList();
+
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
-        title: const Text('Nb Store'),
+        title: const Text(
+          'Nb Store',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: const [
-          IconButton(onPressed: null, icon: Icon(Icons.shopping_cart))
+          IconButton(
+            onPressed: null,
+            icon: Icon(
+              Icons.shopping_cart,
+              color: Colors.white,
+            ),
+          )
         ],
       ),
-      body: ListView.builder(
-        itemCount: 2,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.shopping_cart),
-              title: Text('Product ${index + 1}'),
-              subtitle: Text('Description of Product ${index + 1}'),
-              trailing: IconButton(
-                onPressed: () {
-                  setState(() {
-                    isLikedList[index] = !isLikedList[index];
-                    QuickAlert.show(
-                      context: context,
-                      type: QuickAlertType.success,
-                      text: 'Your Favorite List Updated !',
-                    );
-                  });
-                },
-                icon: Icon(
-                  Icons.favorite,
-                  color: isLikedList[index] ? Colors.grey : Colors.red,
-                ),
-              ),
+      body: likedProducts.isEmpty
+          ? const Center(child: Text('No liked products.'))
+          : ListView.builder(
+              itemCount: likedProducts.length,
+              itemBuilder: (context, index) {
+                final product = likedProducts[index];
+                return Card(
+                  child: ListTile(
+                    leading: Image.network(product.image,
+                        fit: BoxFit.cover, width: 50, height: 50),
+                    title: Text(product.title),
+                    subtitle: Text('\$${product.price}'),
+                    trailing: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          // Update the 'like' status of the product
+                          product.like = !product.like;
+                          // Save the updated products list to the JSON file
+                          _updateProductLike(product);
+                        });
+                      },
+                      icon: Icon(
+                        Icons.favorite,
+                        color: product.like ? Colors.red : Colors.grey,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
+  }
+
+  Future<void> _updateProductLike(Product product) async {
+    try {
+      final Directory directory = await getApplicationDocumentsDirectory();
+      final File localFile = File('${directory.path}/data.json');
+      final String jsonString = await localFile.readAsString();
+      final List<dynamic> jsonList = json.decode(jsonString);
+
+      final index =
+          jsonList.indexWhere((item) => item['title'] == product.title);
+      if (index != -1) {
+        jsonList[index]['like'] = product.like;
+        await localFile.writeAsString(json.encode(jsonList));
+        print('JSON updated successfully.');
+      }
+    } catch (e) {
+      print('Error updating JSON data: $e');
+    }
+  }
+}
+
+class Product {
+  final String title;
+  final int price;
+  final String image;
+  bool like;
+
+  Product({
+    required this.title,
+    required this.price,
+    required this.image,
+    this.like = false,
+  });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      title: json['title'] ?? '',
+      price: json['price'] ?? 0,
+      image: json['image'] ?? '',
+      like: json['like'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'price': price,
+      'image': image,
+      'like': like,
+    };
   }
 }

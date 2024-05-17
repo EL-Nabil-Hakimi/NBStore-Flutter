@@ -17,27 +17,36 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const FirstPage(),
+      home: const SearchPage(),
     );
   }
 }
 
-class FirstPage extends StatefulWidget {
-  const FirstPage({Key? key}) : super(key: key);
+class SearchPage extends StatefulWidget {
+  const SearchPage({Key? key}) : super(key: key);
 
   @override
-  _FirstPageState createState() => _FirstPageState();
+  _SearchPageState createState() => _SearchPageState();
 }
 
-class _FirstPageState extends State<FirstPage> {
+class _SearchPageState extends State<SearchPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Product> products = [];
+  List<Product> filteredProducts = [];
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     copyJsonToLocal();
+    searchController.addListener(_searchProducts);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   Future<void> copyJsonToLocal() async {
@@ -59,6 +68,7 @@ class _FirstPageState extends State<FirstPage> {
       final data = json.decode(jsonString) as List;
       setState(() {
         products = data.map((product) => Product.fromJson(product)).toList();
+        filteredProducts = products;
       });
       print('JSON data loaded successfully.');
     } catch (e) {
@@ -66,9 +76,19 @@ class _FirstPageState extends State<FirstPage> {
     }
   }
 
+  void _searchProducts() {
+    final query = searchController.text.toLowerCase();
+    setState(() {
+      filteredProducts = products.where((product) {
+        return product.title.toLowerCase().contains(query);
+      }).toList();
+    });
+  }
+
   void _updateProductLike(int index) async {
     setState(() {
-      products[index].like = !products[index].like;
+      filteredProducts[index].like = !filteredProducts[index].like;
+      products[products.indexOf(filteredProducts[index])].like = filteredProducts[index].like;
     });
 
     try {
@@ -76,7 +96,8 @@ class _FirstPageState extends State<FirstPage> {
       final File localFile = File('${directory.path}/data.json');
       String jsonString = await localFile.readAsString();
       List<dynamic> jsonList = json.decode(jsonString);
-      jsonList[index]['like'] = products[index].like;
+      final productIndex = products.indexOf(filteredProducts[index]);
+      jsonList[productIndex]['like'] = filteredProducts[index].like;
       jsonString = json.encode(jsonList);
       await localFile.writeAsString(jsonString);
 
@@ -108,6 +129,25 @@ class _FirstPageState extends State<FirstPage> {
             ),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48.0),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Colors.white,
+                filled: true,
+                prefixIcon: const Icon(Icons.search),
+              ),
+            ),
+          ),
+        ),
       ),
       drawer: Drawer(
         child: ListView(
@@ -150,9 +190,9 @@ class _FirstPageState extends State<FirstPage> {
               crossAxisCount: 2,
               childAspectRatio: 0.6,
             ),
-            itemCount: products.length,
+            itemCount: filteredProducts.length,
             itemBuilder: (context, index) {
-              final product = products[index];
+              final product = filteredProducts[index];
               return Padding(
                 padding: const EdgeInsets.all(5.0),
                 child: Card(
