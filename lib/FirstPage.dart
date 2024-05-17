@@ -1,5 +1,23 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:quickalert/quickalert.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const FirstPage(),
+    );
+  }
+}
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -9,27 +27,93 @@ class FirstPage extends StatefulWidget {
 }
 
 class _FirstPageState extends State<FirstPage> {
-  List<bool> isFavoriteList = List.generate(data.length, (index) => false);
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<bool> isFavoriteList = [];
+  List<Product> products = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadJsonData();
+  }
+
+  Future<void> loadJsonData() async {
+    final String response = await rootBundle.loadString('assets/data.json');
+    final data = await json.decode(response) as List;
+    setState(() {
+      products = data.map((product) => Product.fromJson(product)).toList();
+      isFavoriteList = List.generate(products.length, (index) => false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
+        backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
-        title: const Text('Nb Store'),
-        actions: const [
-          IconButton(onPressed: null, icon: Icon(Icons.shopping_cart))
+        title: const Text(
+          'Nb Store',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              _scaffoldKey.currentState?.openDrawer();
+            },
+            icon: const Icon(
+              Icons.shopping_cart,
+              color: Colors.white,
+            ),
+          ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 0, 0, 0),
+              ),
+              child: Text(
+                'Nb Store',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: GridView.count(
-            crossAxisCount: 2,
-            childAspectRatio: 0.5,
-            children: List.generate(
-              data.length,
-              (index) => Padding(
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio:
+                  0.6, // Adjust the aspect ratio to control height
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              return Padding(
                 padding: const EdgeInsets.all(5.0),
                 child: Card(
                   child: Column(
@@ -40,13 +124,32 @@ class _FirstPageState extends State<FirstPage> {
                             isFavoriteList[index] = !isFavoriteList[index];
                           });
                         },
-                        child: Image.network(data[index]),
+                        child: AspectRatio(
+                          aspectRatio: 1, // Ensure the image is square
+                          child: Image.network(
+                            products[index].image,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: Text('Product ${index + 1}'),
+                        child: Text(
+                          products[index].title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                      Text('\$${100 * (index + 1)}'),
+                      Text(
+                        '\$${products[index].price}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      Spacer(),
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: ElevatedButton(
@@ -56,7 +159,7 @@ class _FirstPageState extends State<FirstPage> {
                               QuickAlert.show(
                                 context: context,
                                 type: QuickAlertType.success,
-                                text: 'Your Favorite List Updated !',
+                                text: 'Your Favorite List Updated!',
                               );
                             });
                           },
@@ -68,11 +171,12 @@ class _FirstPageState extends State<FirstPage> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 10), // Add spacing to bottom
                     ],
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -80,10 +184,18 @@ class _FirstPageState extends State<FirstPage> {
   }
 }
 
-// Sample Data
-const data = [
-  "https://5.imimg.com/data5/SELLER/Default/2022/9/VK/FQ/EG/17769549/ap0015.jpeg",
-  "https://5.imimg.com/data5/SELLER/Default/2022/9/RL/ZT/GR/17769549/bkt001-5347-1000x1000.jpeg",
-  "https://5.imimg.com/data5/SELLER/Default/2022/9/TE/IH/KW/17769549/bkt00125-1000x1000.jpeg",
-  "https://5.imimg.com/data5/SELLER/Default/2022/9/OZ/MM/UW/17769549/bkt0041--1000x1000.jpg"
-];
+class Product {
+  final String title;
+  final int price;
+  final String image;
+
+  Product({required this.title, required this.price, required this.image});
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      title: json['title'],
+      price: json['price'],
+      image: json['image'],
+    );
+  }
+}
