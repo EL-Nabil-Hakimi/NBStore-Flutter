@@ -88,12 +88,7 @@ class _LikesPageState extends State<LikesPage> {
                     subtitle: Text('\$${product.price}'),
                     trailing: IconButton(
                       onPressed: () {
-                        setState(() {
-                          // Update the 'like' status of the product
-                          product.like = !product.like;
-                          // Save the updated products list to the JSON file
-                          _updateProductLike(product);
-                        });
+                        _confirmDislikeProduct(product);
                       },
                       icon: Icon(
                         Icons.favorite,
@@ -105,6 +100,42 @@ class _LikesPageState extends State<LikesPage> {
               },
             ),
     );
+  }
+
+  Future<void> _confirmDislikeProduct(Product product) async {
+    bool confirmDislike = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text(
+              'Are you sure you want to remove this product from your liked list?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(false); // Dismiss the dialog and return false
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(true); // Dismiss the dialog and return true
+              },
+              child: Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDislike) {
+      setState(() {
+        product.like = false;
+      });
+      _updateProductLike(product);
+    }
   }
 
   Future<void> _updateProductLike(Product product) async {
