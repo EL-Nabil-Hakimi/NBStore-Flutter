@@ -9,7 +9,7 @@
     "title": "Kawasaki Ninja 400",
     "price": 7999,
     "image": "https://pngimg.com/d/motorcycle_PNG3131.png",
-    "like" : true
+    "like" : false
   },
   {
     "title": "Ducati Panigale V2",

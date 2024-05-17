@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -44,9 +45,12 @@ class _FirstPageState extends State<FirstPage> {
     try {
       final Directory directory = await getApplicationDocumentsDirectory();
       final File localFile = File('${directory.path}/data.json');
-      final String jsonString = await rootBundle.loadString('assets/data.json');
-      await localFile.writeAsString(jsonString);
-      print('JSON copied to local successfully.');
+      if (!localFile.existsSync()) {
+        final String jsonString =
+            await rootBundle.loadString('assets/data.json');
+        await localFile.writeAsString(jsonString);
+        print('JSON copied to local successfully.');
+      }
       loadJsonData(localFile);
     } catch (e) {
       print('Error copying JSON to local: $e');

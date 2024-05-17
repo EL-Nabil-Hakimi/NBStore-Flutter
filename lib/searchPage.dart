@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:quickalert/quickalert.dart';
 
 void main() {
   runApp(MyApp());
@@ -39,7 +38,8 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    copyJsonToLocal();
+    // Load data from the local JSON file
+    loadJsonData();
     searchController.addListener(_searchProducts);
   }
 
@@ -49,27 +49,24 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  Future<void> copyJsonToLocal() async {
+  Future<void> loadJsonData() async {
     try {
+      // Get the directory for the app's documents
       final Directory directory = await getApplicationDocumentsDirectory();
       final File localFile = File('${directory.path}/data.json');
-      final String jsonString = await rootBundle.loadString('assets/data.json');
-      await localFile.writeAsString(jsonString);
-      print('JSON copied to local successfully.');
-      loadJsonData(localFile);
-    } catch (e) {
-      print('Error copying JSON to local: $e');
-    }
-  }
 
-  Future<void> loadJsonData(File file) async {
-    try {
-      final String jsonString = await file.readAsString();
+      // Read the JSON data from the local file
+      final String jsonString = await localFile.readAsString();
+
+      // Decode the JSON data into a list of products
       final data = json.decode(jsonString) as List;
+
+      // Update the state with the loaded products
       setState(() {
         products = data.map((product) => Product.fromJson(product)).toList();
         filteredProducts = products;
       });
+
       print('JSON data loaded successfully.');
     } catch (e) {
       print('Error loading JSON data: $e');
@@ -88,7 +85,8 @@ class _SearchPageState extends State<SearchPage> {
   void _updateProductLike(int index) async {
     setState(() {
       filteredProducts[index].like = !filteredProducts[index].like;
-      products[products.indexOf(filteredProducts[index])].like = filteredProducts[index].like;
+      products[products.indexOf(filteredProducts[index])].like =
+          filteredProducts[index].like;
     });
 
     try {
@@ -96,10 +94,13 @@ class _SearchPageState extends State<SearchPage> {
       final File localFile = File('${directory.path}/data.json');
       String jsonString = await localFile.readAsString();
       List<dynamic> jsonList = json.decode(jsonString);
-      final productIndex = products.indexOf(filteredProducts[index]);
-      jsonList[productIndex]['like'] = filteredProducts[index].like;
-      jsonString = json.encode(jsonList);
-      await localFile.writeAsString(jsonString);
+      final productIndex = jsonList.indexWhere(
+          (product) => product['title'] == filteredProducts[index].title);
+      if (productIndex != -1) {
+        jsonList[productIndex]['like'] = filteredProducts[index].like;
+        jsonString = json.encode(jsonList);
+        await localFile.writeAsString(jsonString);
+      }
 
       print('JSON updated successfully.');
     } catch (e) {
@@ -233,11 +234,11 @@ class _SearchPageState extends State<SearchPage> {
                         child: ElevatedButton(
                           onPressed: () {
                             _updateProductLike(index);
-                            QuickAlert.show(
-                              context: context,
-                              type: QuickAlertType.success,
-                              text: 'Your Favorite List Updated!',
-                            );
+                            // QuickAlert.show(
+                            //   context: context,
+                            //   type: QuickAlertType.success,
+                            //   text: 'Your Favorite List Updated!',
+                            // );
                           },
                           child: Icon(
                             Icons.favorite,
@@ -278,14 +279,5 @@ class Product {
       image: json['image'] ?? '',
       like: json['like'] ?? false,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'price': price,
-      'image': image,
-      'like': like,
-    };
   }
 }
